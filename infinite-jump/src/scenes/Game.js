@@ -19,6 +19,11 @@ export default class Game extends Phaser.Scene
     {
         super('game')
     }
+
+    init()
+    {
+        this.totalScore = 0
+    }
     
     preload()
     {
@@ -26,6 +31,10 @@ export default class Game extends Phaser.Scene
         this.load.image('platform', 'assets/ground_grass.png')
         this.load.image('bunny-stand', 'assets/bunny1_stand.png')
         this.load.image('collect', 'assets/carrot.png')
+        this.load.image('bunny-jump', 'assets/bunny1_jump.png')
+        this.load.audio('jump', 'assets/sfx/jumpSound.ogg')
+        this.load.audio('collectSound', 'assets/sfx/collectionSound.ogg')
+        this.load.audio('gameover', 'assets/sfx/gameoverSound.ogg')
 
         this.cursors = this.input.keyboard.createCursorKeys()
     }
@@ -43,12 +52,12 @@ export default class Game extends Phaser.Scene
 
         for (let i = 0; i < 5; ++i)
         {
-            const x = Phaser.Math.Between(80, 400)
-            const y = 150 * i
+            const x = Phaser.Math.Between(80, 500)
+            const y = 150 * i 
 
             /** @type {Phaser.Physics.Arcade.Sprite} */
             const platform = this.platforms.create(x, y, 'platform')
-            platform.scale = 0.5
+            platform.scale = 0.45
 
             /** @type {Phaser.Physics.Arcade.StaticBody} */
             const body = platform.body
@@ -111,6 +120,17 @@ export default class Game extends Phaser.Scene
         if (touchingDown)
         {
             this.player.setVelocityY(-300)
+
+            //Switch to jump texture
+            this.player.setTexture('bunny-jump')
+            this.sound.play('jump')
+        }
+
+        const vy = this.player.body.velocity.y
+        if (vy > 0 && this.player.texture.key !== 'bunny-stand')
+        {
+            //switch back to stand texture when falling
+            this.player.setTexture('bunny-stand')
         }
         
         // Player move logic
@@ -130,6 +150,14 @@ export default class Game extends Phaser.Scene
 
         // Screen wrapping logic
         this.horizontalWrap(this.player)
+
+        // Game over logic
+        const bottomPlatform = this.findBottomMostPlatform()
+        if (this.player.y > bottomPlatform.y + 200)
+        {
+            this.scene.start('game-over')
+            this.sound.play('gameover')
+        }
     }
 
     // If passed in sprite goes past the left side more than half its width then teleport it to the right side plus half its width, then do the reverse for 
@@ -183,5 +211,27 @@ export default class Game extends Phaser.Scene
         // Create new text value and set it
         const value = `Score: ${this.totalScore}`
         this.totalScoreText.text = value
+
+        this.sound.play('collectSound')
+    }
+
+    findBottomMostPlatform()
+    {
+        const platforms = this.platforms.getChildren()
+        let bottomPlatform = platforms[0]
+
+        for (let i = 1; i < platforms.length; ++i)
+        {
+            const platform = platforms[i]
+
+            //discard any platforms that are above current
+            if (platform.y < bottomPlatform.y)
+            {
+                continue
+            }
+            bottomPlatform = platform
+        }
+
+        return bottomPlatform
     }
 }
