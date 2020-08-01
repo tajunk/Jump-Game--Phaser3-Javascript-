@@ -1,6 +1,8 @@
 import Phaser from '../lib/phaser.js'
 import Collect from '../game/Collect.js'
 
+var moveLeft = false;
+
 export default class Game extends Phaser.Scene
 { 
     totalScore = 0
@@ -14,6 +16,7 @@ export default class Game extends Phaser.Scene
     collectables
     /** @type {Phaser.GameObjects.Text} */
     totalScoreText
+    
 
     constructor()
     {
@@ -41,12 +44,17 @@ export default class Game extends Phaser.Scene
 
     create()
     {
+        this.input.on('pointerdown', function(){
+            moveLeft = true;
+        }, this);
+
         this.add.image(240, 320, 'background')
             .setScrollFactor(1, 0)
         
         this.platforms = this.physics.add.staticGroup()
         this.player = this.physics.add.sprite(240, 320, 'bunny-stand')
             .setScale(0.5)
+    
 
         this.cameras.main.startFollow(this.player)    
 
@@ -94,11 +102,16 @@ export default class Game extends Phaser.Scene
         this.totalScoreText = this.add.text(240, 10, 'Score: 0', style)
             .setScrollFactor(0)
             .setOrigin(0.5, 0)
-
+            
     }
 
     update()
     {
+        if (moveLeft)
+        {
+            player.setVelocityX(-160);
+
+        }
         // Iterate over each platform.. checks if each platform's y value is greater than or equal to the vertical distance that the camera has scrolled
         // plus a fixed 700 pixels. If true, the platform is moved to a random amount(50 - 85px) above the top of the camera.
         this.platforms.children.iterate(child => {
@@ -107,7 +120,8 @@ export default class Game extends Phaser.Scene
             const scrollY = this.cameras.main.scrollY
             if (platform.y >= scrollY + 700)
             {
-                platform.y = scrollY - Phaser.Math.Between(50, 85)
+                platform.y = scrollY - Phaser.Math.Between(50, 100)
+                platform.x = Phaser.Math.Between(80, 500)
                 platform.body.updateFromGameObject()
 
                 this.addCollectableAbove(platform)
