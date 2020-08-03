@@ -30,10 +30,11 @@ export default class Game extends Phaser.Scene
     
     preload()
     {
-        this.load.image('background', 'assets/bg_layer1.png')
+        this.load.image('background', 'assets/bg_layer2.jpg')
+        this.load.image('cloud', 'assets/cloud2.png')
+        this.load.image('collect', 'assets/carrot.png')
         this.load.image('platform', 'assets/ground_grass.png')
         this.load.image('bunny-stand', 'assets/bunny1_stand.png')
-        this.load.image('collect', 'assets/carrot.png')
         this.load.image('bunny-jump', 'assets/bunny1_jump.png')
         this.load.audio('jump', 'assets/sfx/jumpSound.ogg')
         this.load.audio('collectSound', 'assets/sfx/collectionSound.ogg')
@@ -49,7 +50,7 @@ export default class Game extends Phaser.Scene
         }, this);
 
         this.add.image(240, 320, 'background')
-            .setScrollFactor(1, 0)
+            .setScrollFactor(0)
         
         this.platforms = this.physics.add.staticGroup()
         this.player = this.physics.add.sprite(240, 320, 'bunny-stand')
@@ -97,21 +98,23 @@ export default class Game extends Phaser.Scene
             this
         )
 
-        // Text for scoring
-        const style = { color: '#000', fontSize: 24 }
-        this.totalScoreText = this.add.text(240, 10, 'Score: 0', style)
+        var iCloud = this.add.image(240, -35, 'cloud')
             .setScrollFactor(0)
             .setOrigin(0.5, 0)
+            .setScale(0.15)       
+        iCloud.setDepth(5)
+
+        // Text for scoring
+        const style = { color: '#000', fontSize: 24 }
+        this.totalScoreText = this.add.text(240, 15, 'Score: 0', style)
+            .setScrollFactor(0)
+            .setOrigin(0.5, 0)
+        this.totalScoreText.setDepth(6)    
             
     }
 
     update()
     {
-        if (moveLeft)
-        {
-            player.setVelocityX(-160);
-
-        }
         // Iterate over each platform.. checks if each platform's y value is greater than or equal to the vertical distance that the camera has scrolled
         // plus a fixed 700 pixels. If true, the platform is moved to a random amount(50 - 85px) above the top of the camera.
         this.platforms.children.iterate(child => {
