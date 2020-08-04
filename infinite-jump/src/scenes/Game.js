@@ -49,7 +49,7 @@ export default class Game extends Phaser.Scene
             moveLeft = true;
         }, this);
 
-        this.add.image(240, 320, 'background')
+        this.add.image(-30, 130, 'background')
             .setScrollFactor(0)
         
         this.platforms = this.physics.add.staticGroup()
